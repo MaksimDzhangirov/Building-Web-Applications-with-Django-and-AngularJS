@@ -22,31 +22,31 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
 
 class Account(AbstractBaseUser):
-  email = models.EmailField(unique=True)
-  username = models.CharField(max_length=40, unique=True)
-  
-  first_name = models.CharField(max_length=40, blank=True)
-  last_name = models.CharField(max_length=40, blank=True)
-  tagline=models.CharField(max_length=140, blank=True)
-  
-  is_admin = models.BooleanField(default=False)
-  
-  created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now=True)
-  
-  objects = AccountManager()
-  
-  USERNAME_FIELD = 'email'
-  REQUIRED_FIELDS = ['username']
-  
-  def __unicode__(self):
-    return self.email
-    
-  def get_full_name(self):
-    return ' '.join([self.first_name, self.last_name])
-    
-  def get_short_name(self):
-    return self.first_name
+    email = models.EmailField(unique=True)
+    username = models.CharField(max_length=40, unique=True)
+
+    first_name = models.CharField(max_length=40, blank=True)
+    last_name = models.CharField(max_length=40, blank=True)
+    tagline = models.CharField(max_length=140, blank=True)
+
+    is_admin = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = AccountManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
+    def __unicode__(self):
+        return self.email
+
+    def get_full_name(self):
+        return ' '.join([self.first_name, self.last_name])
+
+    def get_short_name(self):
+        return self.first_name
 
 ```
 Давайте подробно рассмотрим каждый атрибут и метод.
@@ -84,5 +84,70 @@ updated_at = models.DateTimeField(auto_now=True)
 В поле `created_at` записывается время создания объекта `Account`. Передавая `auto_now_add=True` в `models.DateTimeField`, мы указываем Django, что значение должны автоматически устанавливатся при создании объекта и не изменяется после этого.
 
 Подобно `created_at` Django автоматически изменяет поле `updated_at`. Отличие между `auto_now_add=True` и `auto_now=True` заключается в том, что аргумент `auto_now=True` приводит к тому, что поле обновляется каждый раз при сохранении объекта.
+
+```python
+objects = AccountManager()
+```
+
+Когда Вы хотите получить экземпляр модели в Django, Вы используете выражение вида `Model.objects.get(**kwargs)`. Здесь атрибут `objects` является классом `Manager`, который принято называть следующим образом `<название модели>Manager`. В нашем случае мы создадим класс `AccountManager`. Мы сделаем это сразу же в следующем разделе.
+
+```python
+REQUIRED_FIELDS = ['username']
+```
+Мы будем отображать имя пользователя в нескольких местах. Таким образом, оно обязательно для заполнения, поэтому мы включаем его в список `REQUIRED_FIELDS`. Обычно для этого достаточно аргумента `required=True`, но поскольку эта модель заменяет модель `User`, Django требует, чтобы мы указали обязательные поля таким образом.
+
+```python
+def __unicode__(self):
+    return self.email
+```   
+
+При работе с моделями в командной строке, как мы вскоре увидим, стандартное представление объекта `Account` выглядит примерно следующим образом `<Account: Account>`. Поскольку мы будем работать с множеством различных учетных записей, такое представление не очень наглядно. Изменить это стандартное поведение можно переписав метод `__unicode__()`. В данном случае мы решили отображать вместо стандартного представления электронную почту пользователя. Строковое предсталвение учетной записи с электронной почтой `james@notgoogleplus.com` теперь будет иметь вид `<Account: james@notgoogleplus.com>`.
+
+```python
+def get_full_name(self):
+    return ' '.join([self.first_name, self.last_name])
+
+def get_short_name(self):
+    return self.first_name
+```
+
+Методы `get_full_name()` и `get_short_name()` добавлены соглаcно стандартам, принятым в Django. Мы не будем использовать ни один из этих методов, но все равно хорошей практикой будет добавление этих методов в соответствии со стандартами Django.
+
+## Создаем класс Manager для модели Account
+
+При использовании нестандартной модели для пользователя, также необходимо определить связанный с ней класс `Manager`, в котором будут описаны методы `create_user()` и `create_superuser()`.
+
+Дабавьте следующий класс перед определением класса `Account` в файл `authentication/models.py`:
+
+```python
+from django.contrib.auth.models import BaseUserManager
+
+class AccountManager(BaseUserManager):
+    def create_user(self, email, password=None, **kwargs):
+        if not email:
+            raise ValueError('Users must have a valid email address.')
+
+        if not kwargs.get('username'):
+            raise ValueError('Users must have a valid username.')
+
+        account = self.model(
+            email=self.normalize_email(email), username=kwargs.get('username')
+        )
+
+        account.set_password(password)
+        account.save()
+
+        return account
+
+    def create_superuser(self, email, password, **kwargs):
+        account = self.create_user(email, password, **kwargs)
+
+        account.is_admin = True
+        account.save()
+
+        return account
+```
+
+Как и в случае с классом `Account`, давайте подробно рассмотрим каждую строчку в этом классе, комментируя только те части, которые нам не встречались ранее.
 
 
