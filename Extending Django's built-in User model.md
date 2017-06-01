@@ -150,4 +150,60 @@ class AccountManager(BaseUserManager):
 
 Как и в случае с классом `Account`, давайте подробно рассмотрим каждую строчку в этом классе, комментируя только те части, которые нам не встречались ранее.
 
+```python
+if not email:
+    raise ValueError('Users must have a valid email address.')
+
+if not kwargs.get('username'):
+    raise ValueError('Users must have a valid username.')
+```
+
+Поскольку у каждого пользователя должны быть заполнены поля электронной почты и имени, всякий раз должна возникать ошибка, если один из этих атрибутов отсутствует.
+
+```python
+account = self.model(
+    email=self.normalize_email(email), username=kwargs.get('username')
+)
+```
+
+Из-за того, что мы не определили атрибут `model` в классе `AccountManager`, `self.model` ссылается на атрибут `model` класса `BaseUserManager`. Это значение по умолчанию для настройки `settings.AUTH_USER_MODEL`, которую мы изменим совсем скоро, чтобы она указывала на класс `Account`.
+
+```python
+account = self.create_account(email, password, **kwargs)
+
+account.is_admin = True
+account.save()
+```
+
+Повторять один и тот же фрагмент кода - это плохая практика. Вместо того, чтобы копировать весь код из `create_account` и вставлять его в `create_superuser`, мы просто будем использовать `create_account` в качестве обработчика процесса создания пользователя во всех случаях. В этом случае в `create_superuser` необходимо будет реализовать только часть, требуемую для преобразования простой учетной записи `Account` в суперпользоватля.
+
+## Изменяем настройку Django AUTH_USER_MODEL
+
+Несмотря на то, что мы создали модель `Account`, команда `python manage.py createsuperuser` (о которой мы поговорим немного позднее) все равно создаёт объекты, используя модель `User`. Это связано с тем, что на данный момент, Django считает, что мы по-прежнему хотим использовать модель `User` для аутентификации пользователя.
+
+Чтобы исправить это и начать использовать модель `Account` в качестве нашей модели для аутентификации нам необходимо изменить настройку `settings.AUTH_USER_MODEL`.
+
+Откройте файл `thinkster_django_angular_tutorial/settings.py` и добавьте следующую строку в его конец:
+
+```python
+AUTH_USER_MODEL = 'authentication.Account'
+```
+
+Это строка сообщает Django, что нужно использовать модель `Account` в приложении `authentication` для аутентификации пользователя.
+
+## Устанавливаем Ваше первое приложение
+
+В Django Вы должны явно указывать какие приложения хотите использовать. Поскольку мы ещё не добавили наше приложение `authentication` в список установленных приложений, сделаем это прямо сейчас.
+
+Откройте файл `thinkster_django_angular_boilerplate/settings.py` и добавьте `authentication` в `INSTALLED_APPS` следующим образом:
+
+```python
+INSTALLED_APPS = (
+    ...,
+    'authentication',
+)
+```
+
+## Осуществлям миграции для нашего первого приложения
+
 
