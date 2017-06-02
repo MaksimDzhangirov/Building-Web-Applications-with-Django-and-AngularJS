@@ -8,4 +8,6 @@
 
 [Расширяем встроенную в Django модель User](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Extending%20Django's%20built-in%20User%20model.md)
 
-[Сериализуем модель Account]
+[Сериализуем модель Account](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Serializing%20the%20Account%20Model.md)
+
+[Регистрируем новых пользователей](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Registering%20new%20users.md)
