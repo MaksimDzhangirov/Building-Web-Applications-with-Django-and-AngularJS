@@ -83,4 +83,70 @@ class Meta:
 model = Account
 ```
 
-Поскольку этот сериализатор наследуется от класса `serializers.ModelSerializer`, очевидно, что мы должны указать ему какую модель нужно сериализовать. Указание модели гарантирует, что могут быть сериализованы только атрибуты этой модели или явно создаваемые поля. 
+Поскольку этот сериализатор наследуется от класса `serializers.ModelSerializer`, очевидно, что мы должны указать ему какую модель нужно сериализовать. Указание модели гарантирует, что могут быть сериализованы только атрибуты этой модели или явно создаваемые поля. Сейчас мы рассмотрим сериализацию атрибутов модели, а явно создаваемые поля немного позднее.
+
+```python
+fields = ('id', 'email', 'username', 'created_at', 'updated_at',
+          'first_name', 'last_name', 'tagline', 'password',
+          'confirm_password',)
+```
+
+В атрибуте `fields` класса `Meta` указываются какие атрибуты модели `Account` должны быть сериализованы. Необходимо быть осторожными при указании полей для сериализации, поскольку некоторые поля, например, `is_superuser`, не должны быть доступны клиенту по соображениям безопасности.
+
+```python
+read_only_fields = ('created_at', 'updated_at',)
+```
+
+Если Вы помните, при создании модели `Account`, мы сделали поля `created_at` и `updated_at` самообновляемыми. Из-за этого мы добавим их к списку полей, которые должны быть доступны только для чтения.
+
+```python
+def create(self, validated_data):
+    # ...
+
+def update(self, instance, validated_data):
+    # ...
+```
+
+Ранее мы упоминали, что иногда мы хотим преобразовать JSON в Python объект. Этот процесс называется десериализацией и осуществляется методами `.create()` и `.update()`. При создании нового объекта, например, `Account`, используется `.create()`. Затем при обновлении  этой модели `Account`, будет использоваться `.update()`.
+
+```python
+instance.username = attrs.get('username', instance.username)
+instance.tagline = attrs.get('tagline', instance.tagline)
+```
+
+Мы позволим пользователю обновлять свои атрибуты `username` (имя пользователя) и `tagline` (девиз). Если эти ключи присутствуют в словаре, мы будем использовать новое значение. В противном случае используется текущее значение объекта `instance`. Здесь `instance` имеет тип `Account`.
+
+```python
+password = validated_data.get('password', None)
+confirm_password = validated_data.get('confirm_password', None)
+
+if password and confirm_password and password == confirm_password:
+    instance.set_password(password)
+    instance.save()
+```
+
+Прежде чем обновить пароль пользователя, нам необходимо убедиться, что оба поля `password` и `password_confirmation` были заполнены. Затем мы проверяем содержат ли эти поля одинаковые значения.
+
+Убедившись в необходимости обновления пароля, мы должны использовать `Account.set_password()` для осуществления обновления. `Account.set_password()` используется для сохранения паролей, защищая их от взлома. Важно отметить, что мы должны явно сохранить модель после обновления пароля.
+
+> Это простейшая реализация того как следует проверять пароль. Я не рекомендую использовать её в реальных системах, но для наших учебных целей она прекрасно подходит.
+
+```python
+update_session_auth_hash(self.context.get('request'), instance)
+```
+
+При обновлении пароля пользователя должен быть также явно обновлен его хэш проверки подлинности сессии. Если не сделать этого, пользователь не будет аутентифицирован при следующем запросе и ему придется снова входить в систему.
+
+# Контрольная точка
+
+Теперь у нас не должно возникнуть проблем с JSON сериализацией объекта `Account`. Опять откройте оболочку Django, выполнив команду `python manage.py shell` и попытайтесь ввести следующие команды:
+
+```
+>>> from authentication.models import Account
+>>> from authentication.serializers import AccountSerializer
+>>> account = Account.objects.latest('created_at')
+>>> serialized_account = AccountSerializer(account)
+>>> serialized_account.data.get('email')
+>>> serialized_account.data.get('username')
+```
+
