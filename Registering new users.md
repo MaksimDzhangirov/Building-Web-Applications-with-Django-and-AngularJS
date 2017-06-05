@@ -48,3 +48,93 @@ class AccountViewSet(viewsets.ModelViewSet):
 
 Давайте рассмотрим этот фрагмент кода построчно.
 
+```python
+class AccountViewSet(viewsets.ModelViewSet):
+```
+
+Django REST фреймворк предоставляет функционал под названием `viewset`. Как следует из названия `viewset` является набором представлений. В частности, `ModelViewSet` предоставляет интерфейс для перечисления, создания, извлечения, обновления и удаления объектов заданной модели.
+
+```python
+lookup_field = 'username'
+queryset = Account.objects.all()
+serializer_class = AccountSerializer
+```
+В этом фрагменте мы определяем `queryset` и сериализатор, с которым будет работать `viewset`. Django REST фреймворк использует указанный queryset и сериализатор для выполнения перечисленных выше действий. Также обратите внимание, что мы определили атрибут `lookup_field`. Как было сказано ранее мы будем использовать атрибут `username` модели `Account` для поиска учетных записей вместо атрибута `id`. Для этого мы переопределяем `lookup_field`.
+
+```python
+def get_permissions(self):
+    if self.request.method in permissions.SAFE_METHODS:
+        return (permissions.AllowAny(),)
+
+    if self.request.method == 'POST':
+        return (permissions.AllowAny(),)
+
+    return (permissions.IsAuthenticated(), IsAccountOwner(),)
+```
+
+Единственный пользователь, который может вызывать опасные (с точки зрения безопасности - прим. переводчика) методы (такие как `update()` и `delete()`)  - это владелей учетной записи. Сначала мы проверяем аутентифицирован ли пользователь, а затем вызываем пользовательский метод проверки прав пользователя, который мы вскоре напишем. Эта проверка не осуществляется, если HTTP методом является `POST`. Мы хотим, чтобы любой пользователь мог создавать учётную запись.
+
+Если HTTP метод запроса - "безопасный" ("GET", "POST" и т. д.), то кто угодно может использовать эту конечную точку.
+
+```python
+def create(self, request):
+    serializer = self.serializer_class(data=request.data)
+
+    if serializer.is_valid():
+        Account.objects.create_user(**serializer.validated_data)
+
+        return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
+    return Response({
+        'status': 'Bad request',
+        'message': 'Account could not be created with received data.'
+    }, status=status.HTTP_400_BAD_REQUEST)
+```
+
+Когда Вы создаёте объект, используя метод сериализатора `save()`, присвоение атрибутов объекта происходит без каких-либо преобразований. Это означает, что если пользователь регистрируется, используя пароль `'password'`, то его пароль сохранится как `'password'`. Это плохо по нескольким причинам: 1) Хранение паролей в текстовом виде - это серьезная "дыра" в безопасности системы. 2) Django преобразует пароли, используя хэширование и соли, перед их сравнением, поэтому пользователь не сможет войти в систему, используя строку `'password'` в качестве пароля, если всё оставить как есть.
+
+Мы решаем эту проблему, переопределяя метод `.create()` для этого `viewset` и используя `Account.objects.create_user()` для создания объекта `Account`.
+
+## Создаём пользовательский метод проверки прав IsAccountOwner
+
+Давайте создадим метод проверки прав `IsAccountOwner` для только что созданного нами представления.
+
+Создайте файл под названием `authentication/permissions.py` со следующим содержимым:
+
+```python
+from rest_framework import permissions
+
+
+class IsAccountOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, account):
+        if request.user:
+            return account == request.user
+        return False
+```
+
+Это довольно простой метод проверки прав. Если существует пользователь, связанный с текущим запросом, то мы проверяем является ли он тем же объектом, что и `account`. Если не существует пользователя, связанного с текущим запросом, мы просто возвращаем `False`.
+
+## Добавляем конечную точку API
+
+Теперь, когда мы создали представление, нам надо добавить его в URL файл. Откройте `thinkster_django_angular_boilerplate/urls.py` и обновите его, чтобы он выглядел следующим образом:
+
+```python
+# .. Импорты
+from rest_framework_nested import routers
+
+from authentication.views import AccountViewSet
+
+router = routers.SimpleRouter()
+router.register(r'accounts', AccountViewSet)
+
+urlpatterns = patterns(
+     '',
+    # ... URLы
+    url(r'^api/v1/', include(router.urls)),
+
+    url('^.*$', IndexView.as_view(), name='index'),
+)
+```
+> Очень важно, чтобы последний URL в вышеприведенном фрагменте кода был всегда последним. Он называется сквозным или перехватывающим путём. Он перехвытывает все запросы, не соответствующие ни одному из предыдущих правил и передаёт их в маршрутизатор AngularJS для обработки. Порядок, в котором расположены другие URL, обычно не имеет значения.
+
+## Angular служба для регистрации новых пользователей
+
