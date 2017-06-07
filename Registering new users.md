@@ -242,3 +242,52 @@ return $http.post('/api/v1/accounts/', {
 
 ## Создаём интерфейс для регистрации новых пользователей
 
+Давайте начнем создавать интерфейс, который будут использовать пользователи для регистрации. Создайте файл в каталоге `static/templates/authentication/` под названием `register.html` со следующим кодом:
+
+```html
+<div class="row">
+  <div class="col-md-4 col-md-offset-4">
+    <h1>Register</h1>
+
+    <div class="well">
+      <form role="form" ng-submit="vm.register()">
+        <div class="form-group">
+          <label for="register__email">Email</label>
+          <input type="email" class="form-control" id="register__email" ng-model="vm.email" placeholder="ex. john@notgoogle.com" />
+        </div>
+
+        <div class="form-group">
+          <label for="register__username">Username</label>
+          <input type="text" class="form-control" id="register__username" ng-model="vm.username" placeholder="ex. john" />
+        </div>
+
+        <div class="form-group">
+          <label for="register__password">Password</label>
+          <input type="password" class="form-control" id="register__password" ng-model="vm.password" placeholder="ex. thisisnotgoogleplus" />
+        </div>
+
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+```
+
+На этот раз мы не будем вдаваться в подробности, поскольку это довольно простая HTML разметка. Большинство классов взято из Bootstrap, который включен вшаблонный проект. Стоит обратить внимание только на две строки:
+
+```html
+<form role="form" ng-submit="vm.register()">
+```
+
+Эта строка отвечает за вызов функции `$scope.register`, которую мы создали в нашем контроллере. `ng-submit` будет вызывать `$scope.register` при отправке формы. Если Вы сталкивались с Angular раньше, то уже наверное использовали `$scope`. В этом учебном пособии мы стараемся избегать использования `$scope`, где это возможно, используя вместо него `vm` - сокращение от ViewModel. Чтобы узнать больше об этом, смотри раздел [Контроллеры](https://github.com/johnpapa/angularjs-styleguide#controllers) руководства по стилю кодирования AngularJS от John Papa.
+
+```html
+<input type="email" class="form-control" id="register__email" ng-model="vm.email" placeholder="ex. john@notgoogle.com" />
+```
+
+В каждом `<input />` Вы увидите ещё одну директиву - `ng-model`. `ng-model` отвечает за сохранение введенного значения в ViewModel. Используя эту директиву мы передаём значения имени пользователя, пароля и электронной почты в ViewModel при вызове `vm.register`.
+
+## Управляем интерфейсом с помощью RegisterController
+
