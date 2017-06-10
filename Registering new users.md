@@ -291,3 +291,162 @@ return $http.post('/api/v1/accounts/', {
 
 ## Управляем интерфейсом с помощью RegisterController
 
+После того как написаны слуюба и интерфейс, нам необходим контроллер, чтобы связать их. Разрабатываемый нами `RegisterController` контроллер позволит вызывать метод `register` службы `Authentication` каждый раз, когда пользователь отправляет только что созданную форму.
+
+Создайте файл в каталоге `static/javascripts/authentication/controllers/` с названием `register.controller.js` и добавьте в него следующий код:
+
+```javascript
+/**
+* Register controller
+* @namespace thinkster.authentication.controllers
+*/
+(function () {
+  'use strict';
+
+  angular
+    .module('thinkster.authentication.controllers')
+    .controller('RegisterController', RegisterController);
+
+  RegisterController.$inject = ['$location', '$scope', 'Authentication'];
+
+  /**
+  * @namespace RegisterController
+  */
+  function RegisterController($location, $scope, Authentication) {
+    var vm = this;
+
+    vm.register = register;
+
+    /**
+    * @name register
+    * @desc Register a new user
+    * @memberOf thinkster.authentication.controllers.RegisterController
+    */
+    function register() {
+      Authentication.register(vm.email, vm.password, vm.username);
+    }
+  }
+})();
+```
+
+Как обычно мы пропустим уже известные нам понятия и поговорим о новых.
+
+```javascript
+.controller('RegisterController', RegisterController);
+```
+
+Этот фрагмент кода похож на тот, где мы регистрировали нашу службу. Разница заключается в том, что в этот раз мы регистрируем контроллер.
+
+`vm` позволяет только что созданному шаблону получить доступ к методу `register`, который мы определим позднее в контроллере.
+
+```javascript
+Authentication.register(vm.email, vm.password, vm.username);
+```
+
+Здесь мы вызываем службу, созданную несколько минут назад. Мы передаём имя пользователя, пароль и электронную почту из `vm`.
+
+## Регистрация маршрутов и модулей
+
+Давайте настроим маршрутизацию на стороне клиента, чтобы пользователи приложения могли перейти к форме для регистрации.
+
+Создайте файл `thinkster.routes.js` в каталоге `static/javascripts` и добавьте в него следующий код:
+
+```javascript
+(function () {
+  'use strict';
+
+  angular
+    .module('thinkster.routes')
+    .config(config);
+
+  config.$inject = ['$routeProvider'];
+
+  /**
+  * @name config
+  * @desc Define valid application routes
+  */
+  function config($routeProvider) {
+    $routeProvider.when('/register', {
+      controller: 'RegisterController', 
+      controllerAs: 'vm',
+      templateUrl: '/static/templates/authentication/register.html'
+    }).otherwise('/');
+  }
+})();
+```
+
+Необходимо коснуться нескольких моментов в этом фрагменте кода.
+
+```javascript
+.config(config);
+```
+
+Angular, как и практически любой другой фреймворк, позволяет Вам редактировать его настройки. Вы можете сделать с помощью `.config`.
+
+```javascript
+function config($routeProvider) {
+```
+
+Здесь мы внедряем зависимость `$routeProvider`, что позволяет нам добавить маршрутизацию в клиентское приложение.
+
+```javascript
+$routeProvider.when('/register', {
+```
+
+`$routeProvider.when` принимает два аргумента: путь и объект с настройками. Здесь мы используем `/register` в качестве пути, поскольку хотим, чтобы после перехода по этому пути отображалась регистрационная форма.
+
+```javascript
+controller: 'RegisterController',
+controllerAs: 'vm',
+```
+
+Один из ключей, который Вы можете добавить в объект с настройками - это `controller`. Это позволяет сопоставить определенный контроллер с этим маршрутом. Здесь мы используем `RegisterController` контроллер, созданный нами ранее. `controllerAs` - это другой настраиваемый параметр. Он необходим, чтобы мы могли использовать переменную `vm`. Короче говоря, что хотим использовать псевдоним `vm`, ссылаясь на контроллер в шаблоне.
+
+```javascript
+templateUrl: '/static/templates/authentication/register.html'
+```
+
+Другой ключ, используемый нами - это `templateUrl`. `templateUrl` содержит URL строку с адресом, где находится шаблон, который мы хотим использовать для этого маршрута.
+
+```javascript
+}).otherwise('/');
+```
+
+Мы добавим дополнительные маршруты в дальнейшем, но может так получиться, что пользователь введет URL адрес, не поддерживаемый нашим приложением. В этом случае `$routeProvider.otherwise` перенаправит пользователя по указанному пути; в данном случае - '/'.
+
+## Настройка модулей в AngularJS
+
+Давайте кратко рассмотрим использование модулей в AngulaJS.
+
+В Angular Вы должны определить модули перед тем как их использовать. Таким образом, нам надо определить `thinkster.authentication.services`, `thinkster.authentication.controllers` и `thinkster.routes`. Поскольку `thinkster.authentication.services` и `thinkster.authentication.controllers` являются подмодулями `thinkster.authentication` нам необходимо также создать модуль `thinkster.authentication`.
+
+Создайте файл `authentication.module.js` в каталоге `static/javascripts/authentication/` и добавьте в него следующий код:
+
+```javascript
+(function () {
+  'use strict';
+
+  angular
+    .module('thinkster.authentication', [
+      'thinkster.authentication.controllers',
+      'thinkster.authentication.services'
+    ]);
+
+  angular
+    .module('thinkster.authentication.controllers', []);
+
+  angular
+    .module('thinkster.authentication.services', ['ngCookies']);
+})();
+```
+
+Здесь есть несколько инетерсных моментов, на которых стоит остановиться.
+
+```javscript
+angular
+  .module('thinkster.authentication', [
+    'thinkster.authentication.controllers',
+    'thinkster.authentication.services'
+  ]);
+```
+
