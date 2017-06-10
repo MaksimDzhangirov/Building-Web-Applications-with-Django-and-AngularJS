@@ -442,11 +442,41 @@ templateUrl: '/static/templates/authentication/register.html'
 
 Здесь есть несколько инетерсных моментов, на которых стоит остановиться.
 
-```javscript
+```javascript
 angular
   .module('thinkster.authentication', [
     'thinkster.authentication.controllers',
     'thinkster.authentication.services'
   ]);
 ```
+
+Этот синтаксис определяет модуль `thinkster.authentication` со службами `thinkster.authentication.controllers` и `thinkster.authentication.services` в качестве зависимостей.
+
+```javascript
+angular
+  .module('thinkster.authentication.controllers', []);
+```
+
+Этот синтаксис определяет модуль `thinkster.authentication.controllers` без зависимостей.
+
+Теперь нам необходимо добавить `thinkster.authentication` и `thinkster.routes` в качестве зависимостей в `thinkster`.
+
+Откройте файл `static/javascripts/thinkster.js`, определите требуемые модули и добавьте их в качестве зависимостей в модуль `thinkster`. Обратите внимание, что `thinkster.routes` использует `ngRoute`, который добавлен в шаблонный проект.
+
+```javascript
+(function () {
+  'use strict';
+
+  angular
+    .module('thinkster', [
+      'thinkster.routes',
+      'thinkster.authentication'
+    ]);
+
+  angular
+    .module('thinkster.routes', ['ngRoute']);
+})();
+```
+
+## Маршутизация с помощью #
 
