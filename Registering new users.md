@@ -478,5 +478,62 @@ angular
 })();
 ```
 
-## Маршутизация с помощью #
+## Маршутизация с помощью `#`
+
+По умолчанию Angular использует маршрутизацию с помощью хэшей `#`. Если Вы когда-нибудь видели URL адрес похожий на `www.google.com/#/search`, то Вы понимаете о чём я говорю. Лично я считаю такие URL адреса уродливыми. Чтобы избавиться от маршрутизации с помощью хэшей, мы можем включить `$locationProvider.html5Mode`. В старых браузерах, которые не поддерживают HTML5 маршрутизацию, Angular, определив отсутствие поддержки, будет использовать маршрутизацию с помощью хэшей.
+
+Создайте в каталоге `static/javascripts/` файл `thinkster.config.js` и добавьте в него следующий код:
+
+```javascript
+(function () {
+  'use strict';
+
+  angular
+    .module('thinkster.config')
+    .config(config);
+
+  config.$inject = ['$locationProvider'];
+
+  /**
+  * @name config
+  * @desc Enable HTML5 routing
+  */
+  function config($locationProvider) {
+    $locationProvider.html5Mode(true);
+    $locationProvider.hashPrefix('!');
+  }
+})();
+```
+
+Как было сказано ранее, включение `$locationProvider.html5Mode` позволяет избавится от знака `#` в URL адресах. Параметр `$locationProvider.hashPrefix` преобразует `#` в `!#`. Эта настройка в основном нужна для улучшения работы поисковых систем.
+
+Поскольку здесь мы используем новый модуль, нам нужно открыть файл `static/javascripts/thinkster.js`, определить модуль и лдобавить его в качестве зависимости в модуль `thinkster`.
+
+```javascript
+angular
+  .module('thinkster', [
+    'thinkster.config',
+    // ...
+  ]);
+
+angular
+  .module('thinkster.config', []);
+```
+
+## Добавляем новые .js файлы
+
+В этой главе мы создали несколько новых JavaScript файлов. Мы должны добавить их в клиентское приложение, дописав их в файл `templates/javascripts.html` внутри блока `{% compress js %}`.
+
+Откройте `templates/javascripts.html` и добавьте следующий код перед тегом `{% endcompress %}`:
+
+```html
+<script type="text/javascript" src="{% static 'javascripts/thinkster.config.js' %}"></script>
+<script type="text/javascript" src="{% static 'javascripts/thinkster.routes.js' %}"></script>
+<script type="text/javascript" src="{% static 'javascripts/authentication/authentication.module.js' %}"></script>
+<script type="text/javascript" src="{% static 'javascripts/authentication/services/authentication.service.js' %}"></script>
+<script type="text/javascript" src="{% static 'javascripts/authentication/controllers/register.controller.js' %}"></script>
+```
+
+## Осуществляем защиту от СSRF
+
 
