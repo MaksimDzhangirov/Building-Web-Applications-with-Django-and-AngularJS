@@ -11,3 +11,5 @@
 [Сериализуем модель Account](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Serializing%20the%20Account%20Model.md)
 
 [Регистрируем новых пользователей](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Registering%20new%20users.md)
+
+[Реализация возможности входа пользователей в систему](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Logging%20users%20in.md)
