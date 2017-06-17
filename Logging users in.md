@@ -353,3 +353,83 @@ function login(email, password) {
   }
 })();
 ```
+
+Давайте посмотрим на функцию `activate`.
+
+```javascript
+function activate() {
+  // If the user is authenticated, they should not be here.
+  if (Authentication.isAuthenticated()) {
+    $location.url('/');
+  }
+}
+```
+
+Вы можете заметить, что мы используем функции с названием `activate` довольно часто в этом пособии. В этом названии нет ничего особенного; мы выбираем стандартное название для функции, которая будет запускаться при создании любого контроллера.
+
+Как следует из комментария к функции, если пользователь уже аутентифицирован, ему нечего делать на странице входа в систему. Поэтому мы перенаправляем пользователя на главную страницу.
+
+Мы должны использовать подобную логику и на странице регистрации. Когда мы писали контроллер для регистрации, функция `Authentication.isAuthenticated()` ещё не была создана. Сейчас мы обновим `RegisterController`.
+
+## Обновляем RegisterController
+
+Возвращаясь на шаг назад, давайте добавим проверку в `RegisterController` и перенаправим пользователя, если он уже аутентифицирован.
+
+Откройте файл `static/javascripts/authentication/controllers/register.controller.js` и добавьте следующий код сразу после определения контроллера:
+
+```javascript
+activate();
+
+/**
+ * @name activate
+ * @desc Actions to be performed when this controller is instantiated
+ * @memberOf thinkster.authentication.controllers.RegisterController
+ */
+function activate() {
+  // If the user is authenticated, they should not be here.
+  if (Authentication.isAuthenticated()) {
+    $location.url('/');
+  }
+}
+```
+
+Если Вы не забыли, мы также говорили об автоматическом входе пользователя в систему при регистрации. Поскольку мы обновляем код, связанный с регистрацией, давайте обновим метод `register` в службе `Authentication`.
+
+Замените функцию `Authentication.register` на следующую:
+
+```javascript
+/**
+* @name register
+* @desc Try to register a new user
+* @param {string} email The email entered by the user
+* @param {string} password The password entered by the user
+* @param {string} username The username entered by the user
+* @returns {Promise}
+* @memberOf thinkster.authentication.services.Authentication
+*/
+function register(email, password, username) {
+  return $http.post('/api/v1/accounts/', {
+    username: username,
+    password: password,
+    email: email
+  }).then(registerSuccessFn, registerErrorFn);
+
+  /**
+  * @name registerSuccessFn
+  * @desc Log the new user in
+  */
+  function registerSuccessFn(data, status, headers, config) {
+    Authentication.login(email, password);
+  }
+
+  /**
+  * @name registerErrorFn
+  * @desc Log "Epic failure!" to the console
+  */
+  function registerErrorFn(data, status, headers, config) {
+    console.error('Epic failure!');
+  }
+}
+```
+
+## Создаём маршрут для интерфейса входа в систему
