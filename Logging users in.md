@@ -1,6 +1,6 @@
 # Реализация возможности входа пользователей в систему
 
-Теперь когда пользователи могут зарегистрироваться, им нужен способ входа в систему. Как получилось, что эта часть не реализована в нашей системе регистрации. Как только пользователь зарегистрировался, мы должны автоматически позволить ему войти в систему.
+Теперь когда пользователи могут зарегистрироваться, им нужен способ входа в систему. Так получилось, что эта часть не реализована в нашей системе регистрации. Как только пользователь зарегистрировался, мы должны автоматически позволить ему войти в систему.
 
 Для начала создадим представления позволяющие осуществлять вход и выход в/из системы. После этого процесс разработки будет аналогичен тому, который использовался для системы регистрации: службы, контроллеры и т. д.
 
@@ -271,3 +271,34 @@ function login(email, password) {
 ```
 
 ## Создаём интерфейс для входа в систему
+
+Теперь когда создана функция `Authentication.login()` для входа пользователя в систему, давайте создадим форму для входа в систему. Откройте `static/templates/authentication/login.html` и добавьте следующий HTML код:
+
+```html
+<div class="row">
+  <div class="col-md-4 col-md-offset-4">
+    <h1>Login</h1>
+
+    <div class="well">
+      <form role="form" ng-submit="vm.login()">
+        <div class="alert alert-danger" ng-show="error" ng-bind="error"></div>
+
+        <div class="form-group">
+          <label for="login__email">Email</label>
+          <input type="text" class="form-control" id="login__email" ng-model="vm.email" placeholder="ex. john@example.com" />
+        </div>
+
+        <div class="form-group">
+          <label for="login__password">Password</label>
+          <input type="password" class="form-control" id="login__password" ng-model="vm.password" placeholder="ex. thisisnotgoogleplus" />
+        </div>
+
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+```
+
