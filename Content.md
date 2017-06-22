@@ -13,3 +13,9 @@
 [Регистрируем новых пользователей](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Registering%20new%20users.md)
 
 [Реализация возможности входа пользователей в систему](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Logging%20users%20in.md)
+
+[Реализация возможности выхода пользователей из системы](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Logging%20users%20out.md)
+
+[Создаём модель Post](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Making%20a%20Post%20model.md)
+
+[Отображаем Post объекты](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Rendering%20Post%20objects.md)
