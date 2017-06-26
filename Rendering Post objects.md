@@ -602,7 +602,106 @@ $scope.$watchCollection(function () { return $scope.posts; }, render);
 
 1. Мы использовали директиву `ng-cloak` для предотвращения мерцаний, поскольку эта директива будет использоваться на главной странице.
 2. Нам необходимо создать директиву `post` для отображения каждого отдельного поста.
-3. Если постов нет, то мы отображаем сообщение, информирующее пользователя об этом.
+3. Если постов нет, то мы выдаем сообщение, информирующее пользователя об этом.
 
-## Создаём директиву для отображения одного Post
+## Создаём директиву для отображения одного Postа
 
+В шаблоне для директивы `posts` мы используем другую директиву под названием `post`. Давайте создадим её.
+
+Создайте файл `static/javascripts/posts/directives/post.directive.js` со следующим содержимым:
+
+```javascript
+/**
+* Post
+* @namespace thinkster.posts.directives
+*/
+(function () {
+  'use strict';
+
+  angular
+    .module('thinkster.posts.directives')
+    .directive('post', post);
+
+  /**
+  * @namespace Post
+  */
+  function post() {
+    /**
+    * @name directive
+    * @desc The directive to be returned
+    * @memberOf thinkster.posts.directives.Post
+    */
+    var directive = {
+      restrict: 'E',
+      scope: {
+        post: '='
+      },
+      templateUrl: '/static/templates/posts/post.html'
+    };
+
+    return directive;
+  }
+})();
+```
+
+Добавьте этот файл в `javascripts.html`:
+
+```html
+<script type="text/javascript" src="{% static 'javascripts/posts/directives/post.directive.js' %}"></script>
+```
+
+В этом фрагменте кода нет ничего нового, что бы стоило обсудить. Эта директива почти идентична предыдущей. Единственное отличие заключается в том, что мы использовали другой шаблон.
+
+## Создаём шаблон для директивы одного поста
+
+Как и для директивы `posts`, нам нужно создать шаблон для директивы `post`.
+
+Создайте `static/templates/posts/post.html` со следующим содержимым:
+
+```html
+<div class="row">
+  <div class="col-sm-12">
+    <div class="well">
+      <div class="post">
+        <div class="post__meta">
+          <a href="/+{{ post.author.username }}">
+            +{{ post.author.username }}
+          </a>
+        </div>
+
+        <div class="post__content">
+          {{ post.content }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+## Добавляем немного CSS
+
+Мы хотим добавить несколько простых стилей, чтобы наши посты выглядели лучше. Откройте `static/stylesheets/styles.css` и добавьте следующий код:
+
+```css
+.no-posts-here {
+  text-align: center;
+}
+
+.post {}
+
+.post .post__meta {
+  font-weight: bold;
+  text-align: right;
+  padding-bottom: 19px;
+}
+
+.post .post__meta a:hover {
+  text-decoration: none;
+}
+```
+
+## Контрольная точка
+
+Проверить, что Вы все сделали правильно, можно перейдя по адресу `http://localhost:8000/` в своём браузере. Вы должны увидеть `Post` объект, созданный Вами в конце предыдущего раздела!
+
+Это также подтвердит правильность работы `PostViewSet` из предыдущего раздела.
