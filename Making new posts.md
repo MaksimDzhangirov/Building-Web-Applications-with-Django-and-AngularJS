@@ -50,4 +50,87 @@
 </form>
 ```
 
-## Упрпавляем интерфейсом для нового поста с помощью NewPostController
+## Управляем интерфейсом для нового поста с помощью NewPostController
+
+Создайте файл `static/javascripts/posts/controllers/new-post.controller.js` со следующим содержимым:
+
+```javascript
+/**
+* NewPostController
+* @namespace thinkster.posts.controllers
+*/
+(function () {
+  'use strict';
+
+  angular
+    .module('thinkster.posts.controllers')
+    .controller('NewPostController', NewPostController);
+
+  NewPostController.$inject = ['$rootScope', '$scope', 'Authentication', 'Snackbar', 'Posts'];
+
+  /**
+  * @namespace NewPostController
+  */
+  function NewPostController($rootScope, $scope, Authentication, Snackbar, Posts) {
+    var vm = this;
+
+    vm.submit = submit;
+
+    /**
+    * @name submit
+    * @desc Create a new Post
+    * @memberOf thinkster.posts.controllers.NewPostController
+    */
+    function submit() {
+      $rootScope.$broadcast('post.created', {
+        content: vm.content,
+        author: {
+          username: Authentication.getAuthenticatedAccount().username
+        }
+      });
+
+      $scope.closeThisDialog();
+
+      Posts.create(vm.content).then(createPostSuccessFn, createPostErrorFn);
+
+
+      /**
+      * @name createPostSuccessFn
+      * @desc Show snackbar with success message
+      */
+      function createPostSuccessFn(data, status, headers, config) {
+        Snackbar.show('Success! Post created.');
+      }
+
+
+      /**
+      * @name createPostErrorFn
+      * @desc Propogate error event and show snackbar with error message
+      */
+      function createPostErrorFn(data, status, headers, config) {
+        $rootScope.$broadcast('post.created.error');
+        Snackbar.error(data.error);
+      }
+    }
+  }
+})();
+```
+
+В этом фрагменте кода есть несколько частей, о которых мы должны упомянуть.
+
+```javascript
+$rootScope.$broadcast('post.created', {
+  content: $scope.content,
+  author: {
+    username: Authentication.getAuthenticatedAccount().username
+  }
+});
+```
+
+Ранее мы настроили перехватчик событий в IndexController, который отслеживал событие `post.created` и затем помещал новый пост в начало массива `vm.posts`. Давайте рассмотрим этот момент подробнее, поскольку, как оказывается, он является важной особенностью больших веб-приложений.
+
+Здесь мы действуем *оптимистично*, предполагая, что ответ API для `Posts.create()` будет содержать код статуса 200, сообщающий, что пост успешно создан, как и планировалось. Сначала это может показаться плохой идеей. Во время запроса что-то может пойди не так и тогда наши данные в `vm.posts` перестанут соответствовать действительности. Почему бы нам просто не подождать ответа от сервера?
+
+Когда я говорил, что мы увеличиваем производительность с точки зрения восприятия пользователем, я говорил о следующем. Мы хотим, чтобы с точки зрения пользователя ответ от сервера приходил мгновенно.
+
+Дело в том, что этот запрос редко завершается с ошибкой. Существует только два случая, когда такое будет происходить в реальном приложении: пользователь не аутентифицирован или не доступен сервер.
