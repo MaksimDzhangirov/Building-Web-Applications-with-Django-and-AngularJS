@@ -19,3 +19,7 @@
 [Создаём модель Post](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Making%20a%20Post%20model.md)
 
 [Отображаем Post объекты](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Rendering%20Post%20objects.md)
+
+[Создаём новые посты](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Making%20new%20posts.md)
+
+[Отображаем профили пользователей](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Displaying%20user%20profiles.md)
