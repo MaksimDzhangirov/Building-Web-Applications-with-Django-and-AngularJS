@@ -305,3 +305,20 @@ function update() {
 
 ## Маршрут для обновления профиля пользователя
 
+Откройте `static/javascripts/thinkster.routes.js` и добавьте следующий маршрут:
+
+```javascript
+// ...
+.when('/+:username/settings', {
+  controller: 'ProfileSettingsController',
+  controllerAs: 'vm',
+  templateUrl: '/static/templates/profiles/settings.html'
+})
+// ...
+```
+
+## Контрольная точка
+
+Это наш последний функционал! Теперь Вы можете загрузить страницу с настройками профиля по адресу `http://localhost:8000/+:username/settings` и обновить свой профиль по Вашему усмотрению.
+
+Попробуйте обновить свой девиз. Если всё сработает правильно, то Вы увидите, что Ваш девиз теперь отображается на Вашей странице профиля.
