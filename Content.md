@@ -23,3 +23,7 @@
 [Создаём новые посты](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Making%20new%20posts.md)
 
 [Отображаем профили пользователей](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Displaying%20user%20profiles.md)
+
+[Обновляем профили пользователей](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Updating%20user%20profiles.md)
+
+[Поздравляем, Вы сделали это!](https://github.com/MaksimDzhangirov/Building-Web-Applications-with-Django-and-AngularJS/blob/master/Congratulations%2C%20you%20did%20it!.md)
